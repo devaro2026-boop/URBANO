@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#15803d"/>
+  <rect x="76" y="80" width="360" height="280" rx="40" fill="#ffffff"/>
+  <rect x="100" y="110" width="312" height="130" rx="16" fill="#0f172a"/>
+  <!-- Headlights -->
+  <circle cx="130" cy="300" r="22" fill="#eab308"/>
+  <circle cx="382" cy="300" r="22" fill="#eab308"/>
+  <!-- Grille -->
+  <rect x="190" y="290" width="132" height="24" rx="8" fill="#334155"/>
+  <!-- Destination display -->
+  <rect x="140" y="90" width="232" height="24" rx="4" fill="#0284c7"/>
+  <text x="256" y="107" font-family="sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">VIAÇÃO FORTALEZA</text>
+  <!-- Wheels -->
+  <rect x="110" y="360" width="60" height="50" rx="12" fill="#0f172a"/>
+  <rect x="342" y="360" width="60" height="50" rx="12" fill="#0f172a"/>
+</svg>

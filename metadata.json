@@ -1,0 +1,6 @@
+{
+  "name": "Viação Fortaleza Driver Assistant",
+  "description": "App de auxílio para motoristas da Viação Fortaleza com rotas, paradas e mapas em tempo real.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

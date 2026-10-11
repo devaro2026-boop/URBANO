@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Leaflet marker container cleanup */
+.custom-stop-marker, .driver-bus-icon, .custom-maneuver-marker, .custom-terminal-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ensure Leaflet popups fit nicely with dark theme */
+.leaflet-popup-content-wrapper {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-radius: 1rem !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5) !important;
+}
+.leaflet-popup-tip {
+  background: #0f172a !important;
+}
+.leaflet-container {
+  font-family: inherit !important;
+}

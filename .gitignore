@@ -6,3 +6,10 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Ignorar lockfiles para evitar falhas de plataforma (cross-platform optional dependencies no Cloudflare Pages)
+package-lock.json
+bun.lock
+bun.lockb
+pnpm-lock.yaml
+yarn.lock

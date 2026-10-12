@@ -1,0 +1,11 @@
+services:
+  - type: static
+    name: aplicativo-urbano-turso
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+      # Rewrite all routes to index.html for Vite SPA client-side routing
+        source: /*
+        destination: /index.html

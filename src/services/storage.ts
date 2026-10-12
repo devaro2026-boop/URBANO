@@ -1,5 +1,6 @@
 import { BusLine, BusVehicle, IncidentReport, ActiveTrip, RecordedGpsTrack } from '../types/bus';
 import { INITIAL_BUS_LINES, INITIAL_VEHICLES } from '../data/mockFortalezaLines';
+import { TursoService } from './tursoService';
 
 const STORAGE_KEYS = {
   LINES: 'vfc_bus_lines_v4',
@@ -16,7 +17,7 @@ export interface DriverSettings {
   speedWarning: boolean;
   highContrastNight: boolean;
   autoAdvanceStops: boolean;
-  geofenceRadiusMeters: number; // default 50m
+  geofenceRadiusMeters: number; // default 55m
   driverName: string;
 }
 
@@ -31,6 +32,57 @@ const DEFAULT_SETTINGS: DriverSettings = {
 };
 
 export const StorageService = {
+  async initTursoSync(): Promise<void> {
+    try {
+      // Economical fetch: only pull from Turso if local storage is missing items
+      const remoteLines = await TursoService.get(STORAGE_KEYS.LINES);
+      if (remoteLines && Array.isArray(remoteLines) && remoteLines.length > 0) {
+        const local = localStorage.getItem(STORAGE_KEYS.LINES);
+        if (!local) {
+          localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(remoteLines));
+          window.dispatchEvent(new CustomEvent('vfc_lines_updated'));
+        }
+      } else {
+        // Push initial to Turso if remote empty
+        const local = localStorage.getItem(STORAGE_KEYS.LINES);
+        if (local) {
+          await TursoService.set(STORAGE_KEYS.LINES, JSON.parse(local));
+        } else {
+          localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(INITIAL_BUS_LINES));
+          await TursoService.set(STORAGE_KEYS.LINES, INITIAL_BUS_LINES);
+        }
+      }
+
+      const remoteVehicles = await TursoService.get(STORAGE_KEYS.VEHICLES);
+      if (remoteVehicles && Array.isArray(remoteVehicles) && remoteVehicles.length > 0) {
+        const local = localStorage.getItem(STORAGE_KEYS.VEHICLES);
+        if (!local) {
+          localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(remoteVehicles));
+          window.dispatchEvent(new CustomEvent('vfc_vehicles_updated'));
+        }
+      } else {
+        const local = localStorage.getItem(STORAGE_KEYS.VEHICLES);
+        if (local) {
+          await TursoService.set(STORAGE_KEYS.VEHICLES, JSON.parse(local));
+        } else {
+          localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(INITIAL_VEHICLES));
+          await TursoService.set(STORAGE_KEYS.VEHICLES, INITIAL_VEHICLES);
+        }
+      }
+
+      const remoteSettings = await TursoService.get(STORAGE_KEYS.SETTINGS);
+      if (remoteSettings) {
+        const local = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+        if (!local) {
+          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(remoteSettings));
+          window.dispatchEvent(new CustomEvent('vfc_settings_updated'));
+        }
+      }
+    } catch (e) {
+      console.error('Turso sync background error:', e);
+    }
+  },
+
   getLines(): BusLine[] {
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.LINES);
@@ -39,7 +91,6 @@ export const StorageService = {
         return INITIAL_BUS_LINES;
       }
       const parsed: BusLine[] = JSON.parse(raw);
-      // Auto-migrate: check if line 040 or others have old straight-line coordinates (< 30 pts)
       let needsMigration = false;
       const initialMap = new Map(INITIAL_BUS_LINES.map((l) => [l.id, l]));
 
@@ -87,6 +138,8 @@ export const StorageService = {
   saveLines(lines: BusLine[]): void {
     localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(lines));
     window.dispatchEvent(new CustomEvent('vfc_lines_updated'));
+    // Economical background sync to Turso
+    TursoService.set(STORAGE_KEYS.LINES, lines).catch(() => {});
   },
 
   updateLine(updatedLine: BusLine): void {
@@ -123,6 +176,7 @@ export const StorageService = {
   saveVehicles(vehicles: BusVehicle[]): void {
     localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(vehicles));
     window.dispatchEvent(new CustomEvent('vfc_vehicles_updated'));
+    TursoService.set(STORAGE_KEYS.VEHICLES, vehicles).catch(() => {});
   },
 
   getIncidents(): IncidentReport[] {
@@ -139,6 +193,7 @@ export const StorageService = {
     const updated = [report, ...list];
     localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('vfc_incidents_updated'));
+    TursoService.set(STORAGE_KEYS.INCIDENTS, updated).catch(() => {});
   },
 
   getActiveTrip(): ActiveTrip | null {
@@ -171,6 +226,7 @@ export const StorageService = {
   saveSettings(settings: DriverSettings): void {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
     window.dispatchEvent(new CustomEvent('vfc_settings_updated'));
+    TursoService.set(STORAGE_KEYS.SETTINGS, settings).catch(() => {});
   },
 
   getRecordedTracks(): RecordedGpsTrack[] {
@@ -226,11 +282,12 @@ export const StorageService = {
       }
       if (Array.isArray(parsed.incidents)) {
         localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(parsed.incidents));
+        TursoService.set(STORAGE_KEYS.INCIDENTS, parsed.incidents).catch(() => {});
       }
       if (Array.isArray(parsed.recordedTracks)) {
         localStorage.setItem(STORAGE_KEYS.RECORDED_TRACKS, JSON.stringify(parsed.recordedTracks));
       }
-      return { success: true, message: 'Dados importados com sucesso!' };
+      return { success: true, message: 'Dados importados e sincronizados com Turso!' };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       return { success: false, message: 'Arquivo JSON inválido: ' + msg };

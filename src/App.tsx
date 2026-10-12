@@ -19,8 +19,10 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<'driver' | 'admin' | 'cco'>('driver');
   const [settings, setSettings] = useState<DriverSettings>(() => StorageService.getSettings());
 
-  // Listen to cross-component or cross-tab updates
+  // Listen to cross-component or cross-tab updates and init Turso sync
   useEffect(() => {
+    StorageService.initTursoSync();
+
     const handleLinesUpdated = () => {
       setLines(StorageService.getLines());
     };

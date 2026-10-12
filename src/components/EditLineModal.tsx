@@ -1,6 +1,7 @@
 import { BusLine, RecordedGpsTrack } from '../types/bus';
 import { StorageService } from '../services/storage';
 import { RoutingService } from '../services/routingService';
+import { DrawRouteModal } from './DrawRouteModal';
 import {
   X,
   Save,
@@ -13,6 +14,7 @@ import {
   CheckCircle,
   AlertCircle,
   Radio,
+  PenTool,
 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -52,6 +54,9 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
 
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError?: boolean } | null>(null);
+
+  // Draw modal state
+  const [drawModalDir, setDrawModalDir] = useState<'ida' | 'volta' | null>(null);
 
   // Available GPS tracks
   const recordedTracks: RecordedGpsTrack[] = StorageService.getRecordedTracks();
@@ -364,6 +369,14 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
+                      onClick={() => setDrawModalDir('ida')}
+                      className="px-2 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600 text-emerald-200 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1 transition"
+                    >
+                      <PenTool className="w-3 h-3" />
+                      <span>Desenhar no Mapa</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleRecalculateStreets('ida')}
                       disabled={isCalibrating}
                       className="px-2 py-1 rounded-lg bg-amber-600/30 hover:bg-amber-600 text-amber-200 border border-amber-500/40 text-[10px] font-bold flex items-center gap-1 transition"
@@ -413,6 +426,14 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
                     Sentido VOLTA: {pathVolta.length} pontos
                   </span>
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setDrawModalDir('volta')}
+                      className="px-2 py-1 rounded-lg bg-cyan-600/30 hover:bg-cyan-600 text-cyan-200 border border-cyan-500/40 text-[10px] font-bold flex items-center gap-1 transition"
+                    >
+                      <PenTool className="w-3 h-3" />
+                      <span>Desenhar no Mapa</span>
+                    </button>
                     <button
                       type="button"
                       onClick={handleInvertIdaToVolta}
@@ -523,6 +544,25 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
           </div>
         </form>
       </div>
+
+      {drawModalDir && (
+        <DrawRouteModal
+          isOpen={!!drawModalDir}
+          onClose={() => setDrawModalDir(null)}
+          lineCode={code}
+          lineName={name}
+          direction={drawModalDir}
+          initialPath={drawModalDir === 'ida' ? pathIda : pathVolta}
+          onSave={(newPath) => {
+            if (drawModalDir === 'ida') {
+              setPathIda(newPath);
+            } else {
+              setPathVolta(newPath);
+            }
+            setDrawModalDir(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { BusLine, BusVehicle } from "../types/bus";
 import { ADDITIONAL_FORTALEZA_LINES } from "./additionalFortalezaLines";
+import { LINE_040_MOOVIT } from "./line040Moovit";
 
 export const INITIAL_VEHICLES: BusVehicle[] = [
   {
@@ -30720,7 +30721,8 @@ const BASE_BUS_LINES: BusLine[] = [
 ];
 
 export const INITIAL_BUS_LINES: BusLine[] = [
-  ...BASE_BUS_LINES,
+  ...BASE_BUS_LINES.filter((l) => l.id !== 'line-040'),
+  LINE_040_MOOVIT,
   ...ADDITIONAL_FORTALEZA_LINES,
 ];
 

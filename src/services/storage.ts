@@ -68,9 +68,13 @@ export const StorageService = {
       let needsMigration = false;
       const initialMap = new Map(INITIAL_BUS_LINES.map((l) => [l.id, l]));
 
-      // 1. Check path validity
+      // 1. Check path validity & update line-040 to official Moovit route
       const migrated = parsed.map((line) => {
         const initial = initialMap.get(line.id);
+        if (line.id === 'line-040' && initial) {
+          needsMigration = true;
+          return initial;
+        }
         if (initial && (!line.routePathIda || line.routePathIda.length < 10)) {
           needsMigration = true;
           return {

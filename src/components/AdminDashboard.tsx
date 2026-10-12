@@ -1510,14 +1510,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               Exporte todo o itinerário e frota em formato JSON para transferir entre dispositivos ou salvar cópia de segurança.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+              {/* Turso Cloud Sync Card */}
+              <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex flex-col justify-between gap-4">
+                <div>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-sm text-white">Turso SQLite Cloud</h3>
+                  <p className="text-xs text-emerald-300/80 mt-1 font-mono truncate">
+                    urbano-devaro.aws-us-east-1.turso.io
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Banco de dados otimizado. Cadastre e sincronize todas as rotas e veículos na nuvem agora.
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    showFeedback('Sincronizando rotas com o Turso SQLite...');
+                    const res = await StorageService.forceSyncToTurso();
+                    showFeedback(res.message, !res.success);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-900/30"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Cadastrar / Sincronizar no Turso</span>
+                </button>
+              </div>
+
               {/* OSRM Calibration Card */}
               <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between gap-4">
                 <div>
                   <Milestone className="w-6 h-6 text-amber-400 mb-2" />
                   <h3 className="font-bold text-sm text-white">Traçado nas Ruas (OSRM)</h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Calibra todas as linhas para contornar a Lagoa da Parangaba e seguir 100% o asfalto das ruas.
+                    Calibra todas as linhas para seguir 100% o asfalto das ruas de Fortaleza.
                   </p>
                 </div>
                 <button

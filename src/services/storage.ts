@@ -301,4 +301,27 @@ export const StorageService = {
     localStorage.removeItem(STORAGE_KEYS.ACTIVE_TRIP);
     localStorage.removeItem(STORAGE_KEYS.RECORDED_TRACKS);
   },
+
+  async forceSyncToTurso(): Promise<{ success: boolean; count: number; message: string }> {
+    try {
+      const lines = this.getLines();
+      const vehicles = this.getVehicles();
+      const incidents = this.getIncidents();
+      const settings = this.getSettings();
+
+      await TursoService.set(STORAGE_KEYS.LINES, lines);
+      await TursoService.set(STORAGE_KEYS.VEHICLES, vehicles);
+      await TursoService.set(STORAGE_KEYS.INCIDENTS, incidents);
+      await TursoService.set(STORAGE_KEYS.SETTINGS, settings);
+
+      return {
+        success: true,
+        count: lines.length,
+        message: `Sucesso! ${lines.length} rotas e ${vehicles.length} veículos cadastrados e salvos no Turso SQLite.`,
+      };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { success: false, count: 0, message: 'Erro ao sincronizar com Turso: ' + msg };
+    }
+  },
 };

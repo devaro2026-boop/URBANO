@@ -49,6 +49,7 @@ import { StorageService, DriverSettings } from '../services/storage';
 import { RoutingService } from '../services/routingService';
 import { GpsTrackRecorderWidget } from './GpsTrackRecorderWidget';
 import { EditLineModal } from './EditLineModal';
+import { FORTALEZA_TERMINALS } from '../data/fortalezaTerminals';
 import { useGpsRecorder } from '../hooks/useGpsRecorder';
 import {
   calculateDistanceMeters,
@@ -104,6 +105,17 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
   const [isMobileCockpitExpanded, setIsMobileCockpitExpanded] = useState(false);
   const [isCleanMapMode, setIsCleanMapMode] = useState(false);
   const [showMobileRouteMenu, setShowMobileRouteMenu] = useState(false);
+  const [selectedTerminalFilter, setSelectedTerminalFilter] = useState<string>('todos');
+
+  // Filter lines by selected terminal
+  const filteredLines = useMemo(() => {
+    if (selectedTerminalFilter === 'todos') return allLines;
+    return allLines.filter(
+      (l) =>
+        l.origin.toLowerCase().includes(selectedTerminalFilter.toLowerCase()) ||
+        l.destination.toLowerCase().includes(selectedTerminalFilter.toLowerCase())
+    );
+  }, [allLines, selectedTerminalFilter]);
 
   // GPS Recorder hook
   const { points: gpsPoints, markedStops: gpsMarkedStops, isRecording: isGpsRecording } = useGpsRecorder();
@@ -1026,15 +1038,31 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
             </button>
           </div>
 
+          {/* Terminal Filter Selector */}
+          <select
+            value={selectedTerminalFilter}
+            onChange={(e) => setSelectedTerminalFilter(e.target.value)}
+            className="bg-slate-950 border border-slate-800 text-emerald-400 text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-hidden focus:border-emerald-500 max-w-[150px] truncate"
+            title="Filtrar rotas por Terminal de Integração"
+          >
+            <option value="todos">📍 Todos Terminais ({allLines.length})</option>
+            {FORTALEZA_TERMINALS.map((t) => (
+              <option key={t.id} value={t.shortName}>
+                📍 {t.name}
+              </option>
+            ))}
+          </select>
+
           {/* Quick Line Selector */}
           <select
             value={selectedLine.id}
             onChange={(e) => {
               onSelectLine(e.target.value);
             }}
-            className="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-hidden focus:border-emerald-500 max-w-[170px] truncate"
+            className="bg-slate-950 border border-slate-800 text-slate-200 text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-hidden focus:border-emerald-500 max-w-[200px] truncate"
+            title="Selecionar Linha para Navegação"
           >
-            {allLines.map((line) => (
+            {filteredLines.map((line) => (
               <option key={line.id} value={line.id}>
                 {line.code} - {line.name}
               </option>
@@ -1509,16 +1537,31 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
 
               {/* Consultation Input & Button matching the screenshot */}
               <div className="py-4 border-b border-slate-200 space-y-3">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  {/* Terminal filter in modal */}
+                  <select
+                    value={selectedTerminalFilter}
+                    onChange={(e) => setSelectedTerminalFilter(e.target.value)}
+                    className="border border-slate-300 rounded-md px-3 py-2 text-sm text-emerald-700 font-semibold bg-emerald-50/50 focus:outline-hidden focus:border-emerald-600 sm:w-52"
+                    title="Filtrar por Terminal"
+                  >
+                    <option value="todos">📍 Todos Terminais ({allLines.length})</option>
+                    {FORTALEZA_TERMINALS.map((t) => (
+                      <option key={t.id} value={t.shortName}>
+                        📍 {t.name}
+                      </option>
+                    ))}
+                  </select>
+
                   <div className="flex-1">
                     <select
                       value={searchLineId}
                       onChange={(e) => setSearchLineId(e.target.value)}
-                      className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-800 bg-white focus:outline-hidden focus:border-slate-500"
+                      className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-800 bg-white focus:outline-hidden focus:border-slate-500 font-medium"
                     >
-                      {allLines.map((l) => (
+                      {filteredLines.map((l) => (
                         <option key={l.id} value={l.id}>
-                          {l.code}-{l.name}
+                          {l.code} - {l.name}
                         </option>
                       ))}
                     </select>
@@ -2049,9 +2092,25 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
               </button>
             </div>
 
-            {/* Quick Switch Line */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+            {/* Quick Switch Line with Terminal filter */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400">
+                Filtrar por Terminal de Integração:
+              </label>
+              <select
+                value={selectedTerminalFilter}
+                onChange={(e) => setSelectedTerminalFilter(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 text-emerald-400 text-xs font-bold rounded-xl p-2.5 focus:outline-hidden focus:border-emerald-500"
+              >
+                <option value="todos">📍 Todos Terminais ({allLines.length} rotas)</option>
+                {FORTALEZA_TERMINALS.map((t) => (
+                  <option key={t.id} value={t.shortName}>
+                    📍 {t.name}
+                  </option>
+                ))}
+              </select>
+
+              <label className="block text-xs font-semibold text-slate-400">
                 Trocar Linha Selecionada:
               </label>
               <select
@@ -2062,7 +2121,7 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
                 }}
                 className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl p-2.5 focus:outline-hidden focus:border-emerald-500"
               >
-                {allLines.map((line) => (
+                {filteredLines.map((line) => (
                   <option key={line.id} value={line.id}>
                     {line.code} - {line.name}
                   </option>

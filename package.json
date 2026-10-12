@@ -9,7 +9,9 @@
     "deploy": "wrangler pages deploy dist",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "routes": "tsx scripts/show-routes.ts",
+    "sync": "tsx scripts/sync-turso.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

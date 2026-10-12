@@ -1,5 +1,6 @@
 import { BusLine, BusVehicle, IncidentReport, ActiveTrip, RecordedGpsTrack } from '../types/bus';
 import { INITIAL_BUS_LINES, INITIAL_VEHICLES } from '../data/mockFortalezaLines';
+import { FORTALEZA_TERMINALS } from '../data/fortalezaTerminals';
 import { TursoService } from './tursoService';
 
 const STORAGE_KEYS = {
@@ -34,49 +35,22 @@ const DEFAULT_SETTINGS: DriverSettings = {
 export const StorageService = {
   async initTursoSync(): Promise<void> {
     try {
-      // Economical fetch: only pull from Turso if local storage is missing items
+      const isOnline = await TursoService.isConnected();
+      if (!isOnline) return;
+
       const remoteLines = await TursoService.get(STORAGE_KEYS.LINES);
-      if (remoteLines && Array.isArray(remoteLines) && remoteLines.length > 0) {
-        const local = localStorage.getItem(STORAGE_KEYS.LINES);
-        if (!local) {
-          localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(remoteLines));
-          window.dispatchEvent(new CustomEvent('vfc_lines_updated'));
-        }
+      if (remoteLines && Array.isArray(remoteLines) && remoteLines.length >= INITIAL_BUS_LINES.length) {
+        localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(remoteLines));
+        window.dispatchEvent(new CustomEvent('vfc_lines_updated'));
       } else {
-        // Push initial to Turso if remote empty
-        const local = localStorage.getItem(STORAGE_KEYS.LINES);
-        if (local) {
-          await TursoService.set(STORAGE_KEYS.LINES, JSON.parse(local));
-        } else {
-          localStorage.setItem(STORAGE_KEYS.LINES, JSON.stringify(INITIAL_BUS_LINES));
-          await TursoService.set(STORAGE_KEYS.LINES, INITIAL_BUS_LINES);
-        }
+        const localLines = this.getLines();
+        await TursoService.syncRelationalData(localLines, this.getVehicles(), FORTALEZA_TERMINALS);
       }
 
       const remoteVehicles = await TursoService.get(STORAGE_KEYS.VEHICLES);
-      if (remoteVehicles && Array.isArray(remoteVehicles) && remoteVehicles.length > 0) {
-        const local = localStorage.getItem(STORAGE_KEYS.VEHICLES);
-        if (!local) {
-          localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(remoteVehicles));
-          window.dispatchEvent(new CustomEvent('vfc_vehicles_updated'));
-        }
-      } else {
-        const local = localStorage.getItem(STORAGE_KEYS.VEHICLES);
-        if (local) {
-          await TursoService.set(STORAGE_KEYS.VEHICLES, JSON.parse(local));
-        } else {
-          localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(INITIAL_VEHICLES));
-          await TursoService.set(STORAGE_KEYS.VEHICLES, INITIAL_VEHICLES);
-        }
-      }
-
-      const remoteSettings = await TursoService.get(STORAGE_KEYS.SETTINGS);
-      if (remoteSettings) {
-        const local = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-        if (!local) {
-          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(remoteSettings));
-          window.dispatchEvent(new CustomEvent('vfc_settings_updated'));
-        }
+      if (remoteVehicles && Array.isArray(remoteVehicles) && remoteVehicles.length >= INITIAL_VEHICLES.length) {
+        localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(remoteVehicles));
+        window.dispatchEvent(new CustomEvent('vfc_vehicles_updated'));
       }
     } catch (e) {
       console.error('Turso sync background error:', e);
@@ -94,9 +68,10 @@ export const StorageService = {
       let needsMigration = false;
       const initialMap = new Map(INITIAL_BUS_LINES.map((l) => [l.id, l]));
 
+      // 1. Check path validity
       const migrated = parsed.map((line) => {
         const initial = initialMap.get(line.id);
-        if (initial && (!line.routePathIda || line.routePathIda.length < 30)) {
+        if (initial && (!line.routePathIda || line.routePathIda.length < 10)) {
           needsMigration = true;
           return {
             ...line,
@@ -107,11 +82,19 @@ export const StorageService = {
         return line;
       });
 
+      // 2. Auto-merge missing terminal lines
+      const existingIds = new Set(migrated.map((l) => l.id));
+      const missingLines = INITIAL_BUS_LINES.filter((l) => !existingIds.has(l.id));
+      if (missingLines.length > 0) {
+        needsMigration = true;
+        migrated.push(...missingLines);
+      }
+
       if (needsMigration) {
         this.saveLines(migrated);
         return migrated;
       }
-      return parsed;
+      return migrated;
     } catch {
       return INITIAL_BUS_LINES;
     }
@@ -167,7 +150,14 @@ export const StorageService = {
         this.saveVehicles(INITIAL_VEHICLES);
         return INITIAL_VEHICLES;
       }
-      return JSON.parse(raw);
+      const parsed: BusVehicle[] = JSON.parse(raw);
+      const existingIds = new Set(parsed.map((v) => v.id));
+      const missingVehicles = INITIAL_VEHICLES.filter((v) => !existingIds.has(v.id));
+      if (missingVehicles.length > 0) {
+        parsed.push(...missingVehicles);
+        this.saveVehicles(parsed);
+      }
+      return parsed;
     } catch {
       return INITIAL_VEHICLES;
     }
@@ -309,15 +299,15 @@ export const StorageService = {
       const incidents = this.getIncidents();
       const settings = this.getSettings();
 
-      await TursoService.set(STORAGE_KEYS.LINES, lines);
-      await TursoService.set(STORAGE_KEYS.VEHICLES, vehicles);
+      // Sincroniza tabelas relacionais SQL (routes, terminals, stops, vehicles) e cache app_kv
+      const syncResult = await TursoService.syncRelationalData(lines, vehicles, FORTALEZA_TERMINALS);
       await TursoService.set(STORAGE_KEYS.INCIDENTS, incidents);
       await TursoService.set(STORAGE_KEYS.SETTINGS, settings);
 
       return {
         success: true,
-        count: lines.length,
-        message: `Sucesso! ${lines.length} rotas e ${vehicles.length} veículos cadastrados e salvos no Turso SQLite.`,
+        count: syncResult.routesCount,
+        message: `Sucesso! ${syncResult.routesCount} rotas, ${FORTALEZA_TERMINALS.length} terminais e ${syncResult.vehiclesCount} veículos cadastrados e gravados no Turso SQLite.`,
       };
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);

@@ -1,4 +1,5 @@
 import { BusLine, BusVehicle } from "../types/bus";
+import { ADDITIONAL_FORTALEZA_LINES } from "./additionalFortalezaLines";
 
 export const INITIAL_VEHICLES: BusVehicle[] = [
   {
@@ -59,10 +60,220 @@ export const INITIAL_VEHICLES: BusVehicle[] = [
     "hasAirConditioning": false,
     "hasAccessibilityLift": true,
     "status": "reserva"
+  },
+  {
+    "id": "veh-07",
+    "prefix": "02503",
+    "plate": "POZ-8K11",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721 Bluetec 6",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-028"
+  },
+  {
+    "id": "veh-08",
+    "prefix": "02504",
+    "plate": "POZ-9L22",
+    "model": "Marcopolo Torino 2020 - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-026"
+  },
+  {
+    "id": "veh-09",
+    "prefix": "02505",
+    "plate": "PPA-3M44",
+    "model": "Caio Apache VIP IV - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-072"
+  },
+  {
+    "id": "veh-10",
+    "prefix": "02506",
+    "plate": "PPA-5N77",
+    "model": "Caio Apache VIP V - Volkswagen 17.230 OD",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-076"
+  },
+  {
+    "id": "veh-11",
+    "prefix": "02507",
+    "plate": "PPB-1A88",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-030"
+  },
+  {
+    "id": "veh-12",
+    "prefix": "02508",
+    "plate": "PPB-2B99",
+    "model": "Marcopolo Torino 2020 - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-041"
+  },
+  {
+    "id": "veh-13",
+    "prefix": "02509",
+    "plate": "PPC-4C12",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-050"
+  },
+  {
+    "id": "veh-14",
+    "prefix": "02510",
+    "plate": "PPC-8D34",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721 Expresso",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-087"
+  },
+  {
+    "id": "veh-15",
+    "prefix": "02511",
+    "plate": "PPD-9E56",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721 Expresso",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-089"
+  },
+  {
+    "id": "veh-16",
+    "prefix": "02512",
+    "plate": "PPE-1F78",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-024"
+  },
+  {
+    "id": "veh-17",
+    "prefix": "02513",
+    "plate": "PPE-2G89",
+    "model": "Caio Apache VIP IV - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-042"
+  },
+  {
+    "id": "veh-18",
+    "prefix": "02514",
+    "plate": "PPF-4H12",
+    "model": "Caio Millennium IV - Scania K250IB Articulado (BRT)",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-051"
+  },
+  {
+    "id": "veh-19",
+    "prefix": "02515",
+    "plate": "PPF-5I23",
+    "model": "Caio Millennium IV - Scania K250IB Articulado (BRT)",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-052"
+  },
+  {
+    "id": "veh-20",
+    "prefix": "02516",
+    "plate": "PPG-7J34",
+    "model": "Marcopolo Torino 2020 - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-066"
+  },
+  {
+    "id": "veh-21",
+    "prefix": "02517",
+    "plate": "PPG-8K45",
+    "model": "Caio Apache VIP V - Volkswagen 17.230 OD",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-073"
+  },
+  {
+    "id": "veh-22",
+    "prefix": "02518",
+    "plate": "PPH-1L56",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-074"
+  },
+  {
+    "id": "veh-23",
+    "prefix": "02519",
+    "plate": "PPH-2M67",
+    "model": "Caio Apache VIP IV - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-077"
+  },
+  {
+    "id": "veh-24",
+    "prefix": "02520",
+    "plate": "PPI-4N78",
+    "model": "Marcopolo Torino 2020 - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-078"
+  },
+  {
+    "id": "veh-25",
+    "prefix": "02521",
+    "plate": "PPI-5O89",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721 Perimetral",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-082"
+  },
+  {
+    "id": "veh-26",
+    "prefix": "02522",
+    "plate": "PPJ-7P90",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721 Perimetral",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-084"
+  },
+  {
+    "id": "veh-27",
+    "prefix": "02523",
+    "plate": "PPJ-8Q01",
+    "model": "Caio Apache VIP V - Mercedes-Benz OF-1721",
+    "hasAirConditioning": true,
+    "hasAccessibilityLift": true,
+    "status": "operando",
+    "currentLineId": "line-086"
   }
 ];
 
-export const INITIAL_BUS_LINES: BusLine[] = [
+const BASE_BUS_LINES: BusLine[] = [
   {
     "id": "line-004",
     "code": "004",
@@ -30507,3 +30718,9 @@ export const INITIAL_BUS_LINES: BusLine[] = [
     ]
   }
 ];
+
+export const INITIAL_BUS_LINES: BusLine[] = [
+  ...BASE_BUS_LINES,
+  ...ADDITIONAL_FORTALEZA_LINES,
+];
+

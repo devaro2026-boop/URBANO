@@ -29,6 +29,7 @@ import { RoutingService } from '../services/routingService';
 import { EditLineModal } from './EditLineModal';
 import { EditStopModal } from './EditStopModal';
 import { ApplyGpsTrackModal } from './ApplyGpsTrackModal';
+import { FORTALEZA_TERMINALS } from '../data/fortalezaTerminals';
 
 interface AdminDashboardProps {
   lines: BusLine[];
@@ -84,6 +85,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newLineCategory, setNewLineCategory] = useState<BusLine['category']>('Troncal');
   const [newLineSpeedLimit, setNewLineSpeedLimit] = useState(50);
   const [newLineFrequency, setNewLineFrequency] = useState(12);
+
+  // Terminal filter state for lines list
+  const [terminalFilter, setTerminalFilter] = useState<string>('todos');
+
+  const filteredAdminLines = React.useMemo(() => {
+    if (terminalFilter === 'todos') return lines;
+    return lines.filter(
+      (l) =>
+        l.origin.toLowerCase().includes(terminalFilter.toLowerCase()) ||
+        l.destination.toLowerCase().includes(terminalFilter.toLowerCase())
+    );
+  }, [lines, terminalFilter]);
 
   // New Stop Form state
   const [isAddingStop, setIsAddingStop] = useState(false);
@@ -723,9 +736,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </form>
             )}
 
+            {/* Terminal Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setTerminalFilter('todos')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                  terminalFilter === 'todos'
+                    ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                    : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                }`}
+              >
+                Todos ({lines.length})
+              </button>
+              {FORTALEZA_TERMINALS.map((t) => {
+                const count = lines.filter(
+                  (l) =>
+                    l.origin.toLowerCase().includes(t.shortName.toLowerCase()) ||
+                    l.destination.toLowerCase().includes(t.shortName.toLowerCase())
+                ).length;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTerminalFilter(t.shortName)}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+                      terminalFilter === t.shortName
+                        ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                        : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>📍 {t.name}</span>
+                    <span className="text-[10px] px-1 py-0.2 rounded-md bg-slate-900/60 font-semibold">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Lines List Table */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {lines.map((line) => (
+              {filteredAdminLines.map((line) => (
                 <div
                   key={line.id}
                   className={`p-4 rounded-2xl border transition flex items-start justify-between gap-3 ${
@@ -1521,9 +1571,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p className="text-xs text-emerald-300/80 mt-1 font-mono truncate">
                     urbano-devaro.aws-us-east-1.turso.io
                   </p>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Banco de dados otimizado. Cadastre e sincronize todas as rotas e veículos na nuvem agora.
+                  <p className="text-[11px] text-slate-300 mt-2">
+                    Tabelas relacionais ativas: <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">routes</code>, <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">terminals</code>, <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">stops</code>, <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">vehicles</code>.
                   </p>
+                  <div className="mt-2 p-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-400 font-mono">
+                    <span className="text-slate-500">Terminal CLI:</span> <span className="text-emerald-400">npm run routes</span>
+                  </div>
                 </div>
                 <button
                   onClick={async () => {

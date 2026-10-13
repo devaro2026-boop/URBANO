@@ -332,6 +332,26 @@ export const DriverNavigation: React.FC<DriverNavigationProps> = ({
       const marker = L.marker([stop.lat, stop.lng], { icon, zIndexOffset: 850 });
       layer.addLayer(marker);
     });
+
+    // Live device position marker during GPS recording
+    if (gpsPoints.length > 0) {
+      const latestPt = gpsPoints[gpsPoints.length - 1];
+      const liveMarkerHtml = `
+        <div class="relative flex items-center justify-center">
+          <span class="absolute inline-flex h-10 w-10 rounded-full bg-purple-500 opacity-75 animate-ping"></span>
+          <div class="relative w-8 h-8 rounded-full bg-purple-600 border-2 border-white flex items-center justify-center text-white shadow-xl text-xs">
+            🚌
+          </div>
+        </div>
+      `;
+      const liveIcon = L.divIcon({
+        className: 'live-gps-device-marker',
+        html: liveMarkerHtml,
+        iconAnchor: [16, 16],
+      });
+      const liveMarker = L.marker(latestPt, { icon: liveIcon, zIndexOffset: 1000 });
+      layer.addLayer(liveMarker);
+    }
   }, [gpsPoints, gpsMarkedStops]);
 
 

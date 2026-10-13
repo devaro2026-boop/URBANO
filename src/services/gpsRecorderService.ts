@@ -77,6 +77,15 @@ class GpsRecorderManager {
       }
     }, 1000);
 
+    // Request Screen Wake Lock to prevent mobile screen from turning off during route recording
+    if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+      (navigator as any).wakeLock.request('screen').then((lock: any) => {
+        this.wakeLock = lock;
+      }).catch((err: any) => {
+        console.warn('Wake Lock request failed:', err);
+      });
+    }
+
     // Start Geolocation watcher if supported
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       try {
@@ -104,6 +113,8 @@ class GpsRecorderManager {
     this.notify();
   }
 
+  private wakeLock: any = null;
+
   pauseRecording() {
     if (!this.state.isRecording) return;
     this.state.isPaused = true;
@@ -127,6 +138,11 @@ class GpsRecorderManager {
     if (this.watchId !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.clearWatch(this.watchId);
       this.watchId = null;
+    }
+
+    if (this.wakeLock) {
+      this.wakeLock.release().catch(() => {});
+      this.wakeLock = null;
     }
 
     const recordedTrack: RecordedGpsTrack = {
@@ -158,6 +174,10 @@ class GpsRecorderManager {
     if (this.watchId !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.clearWatch(this.watchId);
       this.watchId = null;
+    }
+    if (this.wakeLock) {
+      this.wakeLock.release().catch(() => {});
+      this.wakeLock = null;
     }
     this.state = {
       isRecording: false,

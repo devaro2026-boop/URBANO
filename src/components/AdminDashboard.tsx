@@ -29,6 +29,7 @@ import { RoutingService } from '../services/routingService';
 import { EditLineModal } from './EditLineModal';
 import { EditStopModal } from './EditStopModal';
 import { ApplyGpsTrackModal } from './ApplyGpsTrackModal';
+import { CreateLineFromGpsModal } from './CreateLineFromGpsModal';
 import { FORTALEZA_TERMINALS } from '../data/fortalezaTerminals';
 
 interface AdminDashboardProps {
@@ -58,6 +59,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Apply GPS track modal state
   const [applyingTrack, setApplyingTrack] = useState<RecordedGpsTrack | null>(null);
+
+  // Create new line from GPS track modal state
+  const [creatingLineFromTrack, setCreatingLineFromTrack] = useState<RecordedGpsTrack | null>(null);
 
   // Recorded GPS tracks list
   const [recordedTracks, setRecordedTracks] = useState<RecordedGpsTrack[]>(() =>
@@ -1492,14 +1496,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-                      <button
-                        onClick={() => setApplyingTrack(track)}
-                        className="flex-1 py-1.5 px-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar para Linha</span>
-                      </button>
+                      <div className="flex flex-col gap-2 pt-2 border-t border-slate-800/80">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setApplyingTrack(track)}
+                            className="flex-1 py-1.5 px-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copiar p/ Linha</span>
+                          </button>
+                          <button
+                            onClick={() => setCreatingLineFromTrack(track)}
+                            className="flex-1 py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Criar Nova Rota</span>
+                          </button>
+                        </div>
 
                       <button
                         onClick={() => {
@@ -1705,6 +1718,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           onClose={() => setApplyingTrack(null)}
           onSuccess={(updatedLines, msg) => {
             onLinesChange(updatedLines);
+            showFeedback(msg);
+          }}
+        />
+      )}
+
+      {/* Create New Line From GPS Track Modal */}
+      {creatingLineFromTrack && (
+        <CreateLineFromGpsModal
+          track={creatingLineFromTrack}
+          isOpen={Boolean(creatingLineFromTrack)}
+          onClose={() => setCreatingLineFromTrack(null)}
+          onSuccess={(msg) => {
+            onLinesChange(StorageService.getLines());
             showFeedback(msg);
           }}
         />

@@ -51,6 +51,7 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
   // Path coordinates
   const [pathIda, setPathIda] = useState<[number, number][]>(line.routePathIda || []);
   const [pathVolta, setPathVolta] = useState<[number, number][]>(line.routePathVolta || []);
+  const [regenerateStops, setRegenerateStops] = useState(true);
 
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError?: boolean } | null>(null);
@@ -123,6 +124,53 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
       return;
     }
 
+    let updatedStopsIda = line.stopsIda;
+    let updatedStopsVolta = line.stopsVolta;
+
+    if (regenerateStops) {
+      if (pathIda.length >= 2) {
+        const count = Math.min(8, Math.max(2, Math.floor(pathIda.length / 10)));
+        const newStopsIda: any[] = [];
+        for (let i = 0; i < count; i++) {
+          const idx = Math.round((i / (count - 1)) * (pathIda.length - 1));
+          const pt = pathIda[idx];
+          const isFirst = i === 0;
+          const isLast = i === count - 1;
+          newStopsIda.push({
+            id: `stop-ida-${Date.now()}-${i}`,
+            name: isFirst ? (origin.trim() || 'Origem') : isLast ? (destination.trim() || 'Destino') : `Parada ${i + 1} (${origin.trim() || 'Rota'})`,
+            lat: pt[0],
+            lng: pt[1],
+            order: i + 1,
+            isTerminal: isFirst || isLast,
+            landmark: isFirst ? 'Terminal de Origem' : isLast ? 'Terminal de Destino' : 'Ponto ao longo da rota',
+          });
+        }
+        updatedStopsIda = newStopsIda;
+      }
+
+      if (pathVolta.length >= 2) {
+        const count = Math.min(8, Math.max(2, Math.floor(pathVolta.length / 10)));
+        const newStopsVolta: any[] = [];
+        for (let i = 0; i < count; i++) {
+          const idx = Math.round((i / (count - 1)) * (pathVolta.length - 1));
+          const pt = pathVolta[idx];
+          const isFirst = i === 0;
+          const isLast = i === count - 1;
+          newStopsVolta.push({
+            id: `stop-volta-${Date.now()}-${i}`,
+            name: isFirst ? (destination.trim() || 'Destino') : isLast ? (origin.trim() || 'Origem') : `Parada ${i + 1} (${destination.trim() || 'Rota'})`,
+            lat: pt[0],
+            lng: pt[1],
+            order: i + 1,
+            isTerminal: isFirst || isLast,
+            landmark: isFirst ? 'Terminal de Destino' : isLast ? 'Terminal de Origem' : 'Ponto ao longo da rota',
+          });
+        }
+        updatedStopsVolta = newStopsVolta;
+      }
+    }
+
     const updatedLine: BusLine = {
       ...line,
       code: code.trim(),
@@ -145,6 +193,8 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
         .filter(Boolean),
       routePathIda: pathIda,
       routePathVolta: pathVolta,
+      stopsIda: updatedStopsIda,
+      stopsVolta: updatedStopsVolta,
     };
 
     StorageService.updateLine(updatedLine);
@@ -522,6 +572,20 @@ export const EditLineModal: React.FC<EditLineModalProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Regenerate Stops Checkbox */}
+          <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="regenStops"
+              checked={regenerateStops}
+              onChange={(e) => setRegenerateStops(e.target.checked)}
+              className="w-4 h-4 rounded accent-emerald-500 cursor-pointer flex-shrink-0"
+            />
+            <label htmlFor="regenStops" className="text-xs text-slate-200 cursor-pointer font-medium leading-tight">
+              🔄 Atualizar e realinhar paradas automaticamente ao longo do novo traçado (remove paradas antigas que ficaram fora da nova rota)
+            </label>
           </div>
 
           {/* Modal Footer */}
